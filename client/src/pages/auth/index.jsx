@@ -3,21 +3,45 @@ import Victory from "@/assets/victory.svg";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
+import { toast} from "sonner";
 
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const validateSignup = () => {  
+    if (!email.length) {  
+        toast.error("Email is required.");  
+        return false; // Return false if the email is empty  
+    }  
+
+    if (!password.length) {  
+      toast.error("Password is required.");  
+        return false; // Return false if the password is empty  
+    }  
+
+    if (password !== confirmPassword) {  
+      toast.error("Password and confirm password should be the same.");  
+        return false; 
+    }  
+
+    return true; 
+};  
+
+
+  
   const handleLogin = async () => {
     // Add your login logic here
     console.log("Logging in with", email, password);
   }
 
   const handleSignup = async () => {
-    // Add your signup logic here
-    console.log("Signing up with", email, password, confirmPassword);
+    if(validateSignup()){
+      alert("done");
+    }
   }
     return (
     <div className="h-[100vh] w-[100vw] flex items-center justify-center">
