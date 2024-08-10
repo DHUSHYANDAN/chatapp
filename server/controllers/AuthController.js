@@ -86,21 +86,27 @@ export const login = async (req, res, next) => {
 export const getUserInfo=async (req, res, next) => {  
     try {  
          
-       
-
-        // return res.status(200).json({
-        //     user: {
-        //         id: user._id, // Change user.id to user._id
-        //         email: user.email,
-        //         profileSetup: user.profileSetup,
-        //         firstName:user.firstName,
-        //         lastName:user.lastName,
-        //         image:user.image,
-        //         color:user.color,
-        //     }
-        // });
+        const userData = await User.findById(req.userId); // Assuming request is defined  
+        if (!userData) {  
+            return response.status(404).send("User with the given ID not found.");  
+        }  
+        
+        return res.status(200).send({  
+           
+                id: userData._id,  
+                email: userData.email,  
+                profileSetup: userData.profileSetup,  
+                firstName: userData.firstName,  
+                lastName: userData.lastName, 
+                image: userData.image,  
+                color: userData.color 
+             
+        });
     } catch (error) {  
         console.error("Signup error:", error);  
         return res.status(500).json({ message: "Internal Server Error" });  
     }  
 };
+
+
+      

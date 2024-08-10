@@ -2,7 +2,7 @@ import Background from "@/assets/login2.png";
 import Victory from "@/assets/victory.svg";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
