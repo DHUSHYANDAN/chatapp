@@ -84,13 +84,13 @@ const handleImageChange =async (event)=>{
    if (file){
     const formData = new FormData();
     formData.append("profile-image",file);
-    const response=await apiClient.post(ADD_PROFILE_IMAGE_ROUTE,formData,{
-      withCredentials:true,
-    });
-    if(response.status===200 && response.data.image){
-      setUserInfo({...userInfo,image: response.data.image });
-      toast.success("image updated successfully.");
-    }
+    // const response=await apiClient.post(ADD_PROFILE_IMAGE_ROUTE,formData,{
+    //   withCredentials:true,
+    // });
+    // if(response.status===200 && response.data.image){
+    //   setUserInfo({...userInfo,image: response.data.image });
+    //   toast.success("image updated successfully.");
+    // }
   
    }
 };
