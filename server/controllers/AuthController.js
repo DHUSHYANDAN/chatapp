@@ -1,29 +1,34 @@
-import jwt from 'jsonwebtoken'; 
+import jwt from 'jsonwebtoken';
 import User from '../models/UserModel.js';
-import dotenv from 'dotenv';   
+import dotenv from 'dotenv';
 import { genSalt, hash, compare } from 'bcrypt';
 
 dotenv.config();
 
-const maxAge = 3 * 24 * 60 * 60; 
+const maxAge = 3 * 24 * 60 * 60; // 3 days
 
-const createToken = (email, userId) => {  
-    return jwt.sign({ email, userId }, process.env.JWT_KEY, {  
-        expiresIn: maxAge,  
-    });  
-};  
+// Function to create JWT token
+const createToken = (email, userId) => {
+    return jwt.sign({ email, userId }, process.env.JWT_KEY, {
+        expiresIn: maxAge,
+    });
+};
 
-export const signup = async (req, res, next) => {  
-    try {  
-        const { email, password } = req.body;  
+// Signup function
+export const signup = async (req, res) => {
+    try {
+        const { email, password } = req.body;
 
-        if (!email || !password) {  
-            return res.status(400).json({ message: "Email and Password are required." });  
-        }  
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and Password are required." });
+        }
 
-        const user = await User.create({ email, password });  
+        const salt = await genSalt(10);
+        const hashedPassword = await hash(password, salt);
 
-        res.cookie("jwt", createToken(email, user._id), { // Change user.id to user._id
+        const user = await User.create({ email, password: hashedPassword });
+
+        res.cookie("jwt", createToken(email, user._id), {
             httpOnly: true,
             maxAge: maxAge * 1000,
             secure: true,
@@ -32,34 +37,37 @@ export const signup = async (req, res, next) => {
 
         return res.status(201).json({
             user: {
-                id: user._id, // Change user.id to user._id
+                id: user._id,
                 email: user.email,
                 profileSetup: user.profileSetup,
             }
         });
-    } catch (error) {  
-        console.error("Signup error:", error);  
-        return res.status(500).json({ message: "Internal Server Error" });  
-    }  
+    } catch (error) {
+        console.error("Signup error:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
 };
 
-export const login = async (req, res, next) => {  
-    try {  
-        const { email, password } = req.body;  
+// Login function
+export const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
 
-        if (!email || !password) {  
-            return res.status(400).json({ message: "Email and Password are required." });  
-        }  
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and Password are required." });
+        }
 
-        const user = await User.findOne({ email});  
-        if (!user) {  
-            return res.status(404).send({ message: "user with the given email not found." });  
-        }  
-       const auth=await compare(password,user.password)
-       if(!auth){
-        return res.status(400).json({ message: "password is incorrect." });  
-       }
-        res.cookie("jwt", createToken(email, user._id), { // Change user.id to user._id
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).send({ message: "User with the given email not found." });
+        }
+
+        const auth = await compare(password, user.password);
+        if (!auth) {
+            return res.status(400).json({ message: "Password is incorrect." });
+        }
+
+        res.cookie("jwt", createToken(email, user._id), {
             httpOnly: true,
             maxAge: maxAge * 1000,
             secure: true,
@@ -68,45 +76,143 @@ export const login = async (req, res, next) => {
 
         return res.status(200).json({
             user: {
-                id: user._id, // Change user.id to user._id
+                id: user._id,
                 email: user.email,
                 profileSetup: user.profileSetup,
-                firstName:user.firstName,
-                lastName:user.lastName,
-                image:user.image,
-                color:user.color,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                image: user.image,
+                color: user.color,
             }
         });
-    } catch (error) {  
-        console.error("Signup error:", error);  
-        return res.status(500).json({ message: "Internal Server Error" });  
-    }  
+    } catch (error) {
+        console.error("Login error:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
 };
 
-export const getUserInfo=async (req, res, next) => {  
-    try {  
-         
-        const userData = await User.findById(req.userId); // Assuming request is defined  
-        if (!userData) {  
-            return response.status(404).send("User with the given ID not found.");  
-        }  
-        
-        return res.status(200).send({  
-           
-                id: userData._id,  
-                email: userData.email,  
-                profileSetup: userData.profileSetup,  
-                firstName: userData.firstName,  
-                lastName: userData.lastName, 
-                image: userData.image,  
-                color: userData.color 
-             
+// Get User Info function
+export const getUserInfo = async (req, res) => {
+    try {
+        const userData = await User.findById(req.userId);
+        if (!userData) {
+            return res.status(404).send("User with the given ID not found.");
+        }
+
+        return res.status(200).send({
+            id: userData._id,
+            email: userData.email,
+            profileSetup: userData.profileSetup,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            image: userData.image,
+            color: userData.color
         });
-    } catch (error) {  
-        console.error("Signup error:", error);  
-        return res.status(500).json({ message: "Internal Server Error" });  
-    }  
+    } catch (error) {
+        console.error("Get user info error:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
 };
 
+// Update Profile function
+export const updateProfile = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { firstName, lastName, color } = req.body;
 
-      
+        if (!firstName || !lastName) {
+            return res.status(400).send("First name, last name, and color are required.");
+        }
+
+        const userData = await User.findByIdAndUpdate(
+            userId,
+            {
+                firstName,
+                lastName,
+                color,
+                profileSetup: true
+            },
+            { new: true, runValidators: true }
+        );
+
+        if (!userData) {
+            return res.status(404).send("User not found.");
+        }
+
+        return res.status(200).json({
+            id: userData._id,
+            email: userData.email,
+            profileSetup: userData.profileSetup,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            image: userData.image,
+            color: userData.color
+        });
+    } catch (error) {
+        console.error("Update profile error:", error);
+        return res.status(500).send("Internal Server Error");
+    }
+};
+
+export const addProfileImage = async (req, res) => {
+    try {
+        const userId = req.userId;
+        if(!req.file){
+           return res.status(400).send("File is required")
+        }
+        const date =Date.now();
+        let fileName="upload/profiles";
+
+        return res.status(200).json({
+            id: userData._id,
+            email: userData.email,
+            profileSetup: userData.profileSetup,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            image: userData.image,
+            color: userData.color
+        });
+    } catch (error) {
+        console.error("Update profile error:", error);
+        return res.status(500).send("Internal Server Error");
+    }
+};
+
+export const removeProfileImage = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { firstName, lastName, color } = req.body;
+
+        if (!firstName || !lastName) {
+            return res.status(400).send("First name, last name, and color are required.");
+        }
+
+        const userData = await User.findByIdAndUpdate(
+            userId,
+            {
+                firstName,
+                lastName,
+                color,
+                profileSetup: true
+            },
+            { new: true, runValidators: true }
+        );
+
+        if (!userData) {
+            return res.status(404).send("User not found.");
+        }
+
+        return res.status(200).json({
+            id: userData._id,
+            email: userData.email,
+            profileSetup: userData.profileSetup,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            image: userData.image,
+            color: userData.color
+        });
+    } catch (error) {
+        console.error("Update profile error:", error);
+        return res.status(500).send("Internal Server Error");
+    }
+};
