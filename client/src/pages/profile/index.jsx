@@ -1,12 +1,11 @@
 import { useAppStore } from "@/store";
-import { useEffect, useRef, useState } from "react";
+import  { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoArrowBack } from "react-icons/io5";
-import { Avatar } from "@radix-ui/react-avatar";
 import { colors, getColor } from "@/lib/utils";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import { Input } from "@/components/ui/input";
-import { AvatarImage } from "@/components/ui/avatar";
+import { Avatar,AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"
 import { apiClient } from "@/lib/api-client";
@@ -25,12 +24,15 @@ const fileInputRef=useRef(null);
 
 
   useEffect(() => {
-
+   
     if (userInfo.ProfileSetup) {
       setFirstName(userInfo.firstName);
       setLastName(userInfo.lastName);
       setSelectedColor(userInfo.color);
     
+    }
+    if(userInfo.image){
+      setImage()
     }
   }, [userInfo]);
   
@@ -57,7 +59,7 @@ const fileInputRef=useRef(null);
 
       );
       if(response.status===200 && response.data){
-        setUserInfo({...response.data});
+        setUserInfo({ ...response.data});
         toast.success("profile updated successfully.");
         navigate('/chat');
       }
@@ -84,14 +86,18 @@ const handleImageChange =async (event)=>{
    if (file){
     const formData = new FormData();
     formData.append("profile-image",file);
-    // const response=await apiClient.post(ADD_PROFILE_IMAGE_ROUTE,formData,{
-    //   withCredentials:true,
-    // });
-    // if(response.status===200 && response.data.image){
-    //   setUserInfo({...userInfo,image: response.data.image });
-    //   toast.success("image updated successfully.");
-    // }
-  
+    const response=await apiClient.post(ADD_PROFILE_IMAGE_ROUTE,formData,{
+      withCredentials:true,
+    });
+    if(response.status===200 && response.data.image){
+      setUserInfo({...userInfo,image: response.data.image });
+      toast.success("image updated successfully.");
+    }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    setImage(reader.result);
+  };
+  reader.readAsDataURL(file);
    }
 };
 
@@ -184,7 +190,8 @@ const handleDeleteImage =async ()=>{};
                     selectedColor === index
                       ? "outline outline-white/50 outline-1"
                       : ""
-                  }`}
+                  }}
+                  `}
                   key={index}
                   onClick={() => setSelectedColor(index)}
                 ></div>
@@ -193,7 +200,8 @@ const handleDeleteImage =async ()=>{};
           </div>
         </div>
         <div className="w-full ">
-            <Button className="w-full h-16 bg-indigo-600 hover:bg-indigo-900 transition-all duration-300" onClick={saveChanges}>
+           
+       <Button className="w-full h-16 bg-indigo-600 hover:bg-indigo-900 transition-all duration-300" onClick={saveChanges}>
                 Save Changes
             </Button>
         </div>

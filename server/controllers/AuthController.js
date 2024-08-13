@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/UserModel.js';
 import dotenv from 'dotenv';
 import { genSalt, hash, compare } from 'bcrypt';
+import {renameSync,unlinkSync} from 'fs';
 
 dotenv.config();
 
@@ -115,9 +116,9 @@ export const getUserInfo = async (req, res) => {
 };
 
 // Update Profile function
-export const updateProfile = async (req, res) => {
+export const updateProfile = async (req, res,next) => {
     try {
-        const userId = req.userId;
+        const {userId} = req;
         const { firstName, lastName, color } = req.body;
 
         if (!firstName || !lastName) {
@@ -130,7 +131,7 @@ export const updateProfile = async (req, res) => {
                 firstName,
                 lastName,
                 color,
-                profileSetup: true
+                profileSetup:true
             },
             { new: true, runValidators: true }
         );
@@ -154,23 +155,22 @@ export const updateProfile = async (req, res) => {
     }
 };
 
-export const addProfileImage = async (req, res) => {
+export const addProfileImage = async (req, res,next) => {
     try {
-        const userId = req.userId;
+     
         if(!req.file){
            return res.status(400).send("File is required")
         }
         const date =Date.now();
-        let fileName="upload/profiles";
+        let fileName="uploads/profiles"+data+reqest.file.originalname; 
+        renameSync(request.file.path,fileName)
+        const updatedUser=await User.findByIdAndUpdate(req.userId,{image:fileName},{new:true,runValidators:true});
+
 
         return res.status(200).json({
-            id: userData._id,
-            email: userData.email,
-            profileSetup: userData.profileSetup,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            image: userData.image,
-            color: userData.color
+          
+            image: updatedUser.image,
+            
         });
     } catch (error) {
         console.error("Update profile error:", error);
