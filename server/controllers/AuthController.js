@@ -162,8 +162,8 @@ export const addProfileImage = async (req, res,next) => {
            return res.status(400).send("File is required")
         }
         const date =Date.now();
-        let fileName="uploads/profiles"+data+reqest.file.originalname; 
-        renameSync(request.file.path,fileName)
+        let fileName="uploads/profiles"+date+req.file.originalname; 
+        renameSync(req.file.path,fileName)
         const updatedUser=await User.findByIdAndUpdate(req.userId,{image:fileName},{new:true,runValidators:true});
 
 
@@ -180,37 +180,21 @@ export const addProfileImage = async (req, res,next) => {
 
 export const removeProfileImage = async (req, res) => {
     try {
-        const userId = req.userId;
-        const { firstName, lastName, color } = req.body;
+        const {userId} = req;
+        const user= await User.findById(userId);
 
-        if (!firstName || !lastName) {
-            return res.status(400).send("First name, last name, and color are required.");
+        if(!user){
+            return res.status(404).send("user not found.");
+        }
+        if (user.image){
+            unlinkSync(user.image);
         }
 
-        const userData = await User.findByIdAndUpdate(
-            userId,
-            {
-                firstName,
-                lastName,
-                color,
-                profileSetup: true
-            },
-            { new: true, runValidators: true }
-        );
+        user.image=null;
+        await user.save();
 
-        if (!userData) {
-            return res.status(404).send("User not found.");
-        }
 
-        return res.status(200).json({
-            id: userData._id,
-            email: userData.email,
-            profileSetup: userData.profileSetup,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            image: userData.image,
-            color: userData.color
-        });
+        return res.status(200).send('Profile image removed successfully.');
     } catch (error) {
         console.error("Update profile error:", error);
         return res.status(500).send("Internal Server Error");
