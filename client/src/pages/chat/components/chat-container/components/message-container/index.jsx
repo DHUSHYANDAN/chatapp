@@ -1,9 +1,9 @@
 
 
-const MessageBar = () => {
+const ChatContainer = () => {
   return (
-    <div>MessageBar</div>
+    <div>ChatContainer</div>
   )
 }
 
-export default MessageBar
+export default ChatContainer;
