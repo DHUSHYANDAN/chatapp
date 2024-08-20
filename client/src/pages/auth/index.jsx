@@ -53,18 +53,35 @@ const Auth = () => {
     return true;
   };  
 
-  const handleLogin = async () => {
-   if(validateLogin()){
-    const response= await apiClient.post(LOGIN_ROUTE,{email,password},{withCredentials:true})
-    if(response.data.user.id){
-      setUserInfo(response.data.user)
+ // Frontend: handleLogin function
+const handleLogin = async () => {
+  if (validateLogin()) {
+      try {
+          const response = await apiClient.post(LOGIN_ROUTE, { email, password }, { withCredentials: true });
+          
+          if (response.data.user._id) {
+              setUserInfo(response.data.user);
 
-      if(response.data.user.profileSetup)navigate('/chat');
-      else navigate ('/profile');
-    }
-    console.log({ response });
-   }
+              if (response.data.user.profileSetup) {
+                  navigate('/chat');
+              } else {
+                  navigate('/profile');
+              }
+          }
+      } catch (error) {
+          if (error.response) {
+              // Specific error from the server
+              toast.error(error.response.data.message);
+          } else {
+              // Generic error
+              toast.error("An unexpected error occurred. Please try again.");
+          }
+          console.error("Login error:", error.response?.data || error.message);
+      }
   }
+}
+
+
 
   const handleSignup = async () => {
     if(validateSignup()){
@@ -77,7 +94,8 @@ const Auth = () => {
         }
         console.log({ response });
       } catch (error) {
-        console.log("Signup error:", error);
+        console.error("Signup error:", error.response?.data || error.message);
+            
       }
     }
   }
