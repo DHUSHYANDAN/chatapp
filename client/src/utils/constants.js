@@ -10,3 +10,6 @@ export const ADD_PROFILE_IMAGE_ROUTE=`${AUTH_ROUTES}/add-profile-image`;
 export const REMOVE_PROFILE_IMAGE_ROUTE=`${AUTH_ROUTES}/remove-profile-image`;
 
 export const LOGOUT_ROUTE=`${AUTH_ROUTES}/logout`;
+
+export const CONTACTS_ROUTES='api/contacts';
+export const SEARCH_CONTACTS_ROUTES=`${CONTACTS_ROUTES}/search`;
