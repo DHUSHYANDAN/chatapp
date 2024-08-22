@@ -23,7 +23,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { useAppStore } from "@/store";
 
 const NewDM = () => {
-  const {selectedChatType,selectedChatData}=useAppStore();
+  const {setSelectedChatType,setSelectedChatData}=useAppStore();
   const [openNewContactModel, setOpenNewContactModel] = useState(false);
   const [SearchedConatacts, setSearchedConatacts] = useState([]);
 
@@ -49,6 +49,8 @@ const NewDM = () => {
 
   const selectNewContact =(contact)=>{
     setOpenNewContactModel(false);
+    setSelectedChatType("contact");
+    setSelectedChatData(contact); 
     setSearchedConatacts([]);
   };
 
@@ -81,7 +83,9 @@ const NewDM = () => {
               onChange={e => searchContacts(e.target.value)}
             />
           </div>
-          <ScrollArea className="h-[250px]">
+          {
+            searchContacts.length>0 && (
+             <ScrollArea className="h-[250px]">
             <div className="flex flex-col gap-5">
               {SearchedConatacts.map((contact) => (
                 <div key={contact._id} 
@@ -120,9 +124,15 @@ const NewDM = () => {
                 </div>
               ))}
             </div>
-          </ScrollArea>
+              </ScrollArea>
+            )
+          }
+
+                
+
+          
           {SearchedConatacts.length <= 0 && (
-            <div className="flex-1 md:bg-[#1c1d25] md:flex flex-col justify-center items-center mb-2 p-2 duration-1000">
+            <div className="flex-1  md:flex md:mt—0  flex-col justify-center items-center mb-2 p-2 duration-1000">
               <Lottie
                 isClickToPauseDisabled={true}
                 height={150}
