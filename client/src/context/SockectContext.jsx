@@ -12,17 +12,23 @@ export const useSocket = () => {
 export const SocketProvider = ({ children }) => {
   const socket = useRef();
   const { userInfo } = useAppStore();
+
   useEffect(() => {
+    console.log("User Info:", userInfo); 
+
     if (userInfo) {
       socket.current = io(HOST, {
         withCredentials: true,
         query: { userId: userInfo.id },
       });
+
       socket.current.on("connect", () => {
         console.log("Connected to socket server");
       });
 
-      const handleRecieveMessage = (message) => {
+      const handleReceiveMessage = (message) => {
+        console.log("Raw message received:", message); 
+
         const { selectedChatData, selectedChatType, addMessage } =
           useAppStore.getState();
 
@@ -31,15 +37,19 @@ export const SocketProvider = ({ children }) => {
           (selectedChatData._id === message.sender._id ||
             selectedChatData._id === message.recipient._id)
         ) {
+          console.log("Message received:", message); 
           addMessage(message);
         }
       };
-      socket.current.on("recieveMessage", handleRecieveMessage);
+
+      socket.current.on("receiveMessage", handleReceiveMessage);
+
       return () => {
         socket.current.disconnect();
       };
     }
   }, [userInfo]);
+
   return (
     <SocketContext.Provider value={socket.current}>
       {children}

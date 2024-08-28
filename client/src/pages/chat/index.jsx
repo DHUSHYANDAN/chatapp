@@ -13,7 +13,7 @@ const Chat = () => {
   useEffect(() => {  
     if (!userInfo.profileSetup) {  
       toast("Please set up your profile to continue.");  
-      navigate("/profile"); // Navigate to the profile setup p age  
+      navigate("/profile"); 
     }  
   }, [userInfo, navigate]);  
 
