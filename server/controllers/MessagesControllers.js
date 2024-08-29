@@ -1,22 +1,24 @@
-export const searchContacts = async (req, res,next) => {
+import Message from "../models/MessagesModel.js";
+
+export const getMessages = async (req, res,next) => {
     try {
-        const {searchTerm } =req.body;
-        if (searchTerm ===undefined || searchTerm===null){
-        return res.status(400).send("SearchTerm is required.");
+        const user1 =req.userId;
+        const user2 =req.body.id;
+        
+        if (user1 || !user2){
+        return res.status(400).send("Both user Id's are required.");
         }
 
-        const sanitizedSearchTerm=searchTerm.replace(/[.**?^${}|[\]\\]/g,"\\$&");
 
-        const regex=new RegExp(sanitizedSearchTerm,"i");
-        const contacts=await User.find({
-            $and: [{_id:{$ne:req.userId}},
-                {
-                    $or:[{firstName: regex}, {lastNmae:regex},{email:regex}],
-                },
+        
+        const messages= await Message.find({
+            $or:[
+                {sender:user1,recipient:user2},
+                {sender:user2,recipient:user1},
+                                
             ],
-        });
-
-        return res.status(200).json({contacts});
+        }).sort({timestamp:1});
+        return res.status(200).json({messages});
 
     } catch (error) {
         console.error("Update profile error:", error);
