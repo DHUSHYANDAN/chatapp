@@ -28,19 +28,26 @@ export const SocketProvider = ({ children }) => {
 
       const handleReceiveMessage = (message) => {
         console.log("Raw message received:", message); 
-
+      
         const { selectedChatData, selectedChatType, addMessage } =
           useAppStore.getState();
-
+      
+        // Check if message, sender, and recipient exist
         if (
           selectedChatType !== undefined &&
+          message &&
+          message.sender &&
+          message.recipient &&
           (selectedChatData._id === message.sender._id ||
             selectedChatData._id === message.recipient._id)
         ) {
           console.log("Message received:", message); 
           addMessage(message);
+        } else {
+          console.warn("Received message with unexpected structure:", message);
         }
       };
+      
 
       socket.current.on("receiveMessage", handleReceiveMessage);
 
