@@ -2,7 +2,7 @@ import { apiClient } from "@/lib/api-client";
 import { useAppStore } from "@/store";
 import { GET_ALL_MESSAGES_ROUTE, HOST } from "@/utils/constants";
 import moment from "moment";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef,useState } from "react";
 import {MdFolderZip} from "react-icons/md";
 import {IoMdArrowRoundDown} from 'react-icons/io';
 
@@ -10,10 +10,13 @@ import {IoMdArrowRoundDown} from 'react-icons/io';
 
 const MessageContainer = () => {
   const scrollRef = useRef();
-  const { selectedChatType, selectedChatData, userInfo, selectedChatMessages, setSelectedChatMessages, } = useAppStore();
+  const { selectedChatType, selectedChatData, userInfo, selectedChatMessages, setSelectedChatMessages,
+    setFileDownloadProgress,
+    setIsDownloading,
+   } = useAppStore();
 
   const [showImage,setShowImage]=useState(false);
-  const [imageURl,setImageURL]=useSate(null);
+  const [imageURl,setImageURL]=useState(null);
 
   useEffect(() => {
     const getMessages = async () => {
@@ -67,8 +70,15 @@ const MessageContainer = () => {
   };
 
   const  downloadFile=async(url)=>{
+    setIsDownloading(true);
+    setFileDownloadProgress(0);
     const response=await apiClient.get(`${HOST}/${url}`,{
       responseType:"blob",
+      onDownloadProgress:(ProgressEvent)=>{
+        const {loaded,total}=ProgressEvent;
+        const percentCompleted=Math.round((loaded*100)/total);
+        setFileDownloadProgress(percentCompleted);
+      }
     });
     const urlBlob=window.URL.createObjectURL(new Blob([response.data]));
     const link=document.createElement("a");
@@ -78,6 +88,8 @@ const MessageContainer = () => {
     link.click();
     link.remove();
     window.URL.revokeObjectURL(urlBlob);
+    setIsDownloading(false);
+    setFileDownloadProgress(0);
 
   };
 
@@ -114,12 +126,22 @@ const MessageContainer = () => {
     <div className="flex-1 overflow-y-auto scrollbar-hidden p-4 px-8 md:w-[65vw] lg:w-[70vw] xl:w-[80vw] w-full ">{renderMessages()}
       <div ref={scrollRef} /> 
       {
-   showImage && <div className="fixed -[1000] top-0 left-0 h-[100vh] w-[100vh] flex items-center justify-center backdrop-blur-lg ">
+   showImage && ( <div className="fixed -[1000] top-0 left-0 h-[100vh] w-[100vw] flex items-center justify-center backdrop-blur-lg ">
     <div>
-      <img src="" alt="" />
+      <img src={`${HOST}/${imageURl} `} className="h-[80vh] w-full bg-cover" alt="" />
+    </div>
+    <div className="flex gap-5 fixed top-0 mt-5 ">
+      <button className="bg-black/20 p-3 text-2xl rounded-full hover:bg-black/50 cursor-pointer transition-all duration-300" onClick={()=>{
+        setShowImage(false);
+        setImageURL(null);
+      }}>
+      <IoMdArrowRoundDown/>
+
+      </button>
     </div>
    </div>
-}</div>
+)}
+</div>
   )
 }
 

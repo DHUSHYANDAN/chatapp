@@ -6,6 +6,7 @@ import { GET_DM_CONTACTS_ROUTES } from
   "@/utils/constants";
 import { useAppStore } from "@/store";
 import ContactList from "@/components/contact-list";
+import CreateChannel from "./components/create-channel";
 const ContactsContainer = () => {
 
   const { setDirectMessagesContacts, directMessagesContacts } = useAppStore();
@@ -32,13 +33,17 @@ const ContactsContainer = () => {
           <NewDM />
         </div>
         <div className='max-h-[38vh] overflow-y-auto scrollbar-hidden'
-        > <ContactList contacts={directMessagesContacts} />       </div>
+        > <ContactList contacts={directMessagesContacts} />      
+         </div>
+
       </div>
+
 
       <div className="my-5">
 
         <div className="flex items-center justify-between pr-10">
           <Title text="Channels" />
+          <CreateChannel />
         </div>
       </div>
 
